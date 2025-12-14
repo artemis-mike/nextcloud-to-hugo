@@ -61,32 +61,72 @@ except Exception as e:
     sys.exit(1)
 
 def getYearDirectories(directory):
-    """
-    Get a list of directories that are named like YYYY (4-digit years).
-    
-    Args:
-        directory: The directory path to search in
-        
-    Returns:
-        list: List of year directory names (strings)
-    """
-    yearDirectories = []
+    year_directories = []
     reYear = re.compile(r'^\d{4}$')
-    
     try:
         for node in nc.files.listdir(directory):
             if node.is_dir and reYear.match(node.name):
-                yearDirectories.append(node.name)
+                year_directories.append(node.name)
                 logging.debug(f"Found year directory: {node.name}")
         
-        logging.info(f"Found {len(yearDirectories)} year directories: {sorted(yearDirectories)}")
-        return sorted(yearDirectories)
+        logging.info(f"Found {len(year_directories)} year directories: {sorted(year_directories)}")
+        return sorted(year_directories)
     except Exception as e:
         logging.error(f"Error getting year directories from '{directory}': {e}")
         return []
 
 
-yearsDirectories = getYearDirectories(WATCH_DIRECTORY)
-logging.info(f"Year directories: {yearsDirectories}")
+def getDirectoriesByYear(watch_directory, year_directories):
+    """
+    Get all subdirectories organized by year.
+    
+    Args:
+        watch_directory: The base directory to search in
+        year_directories: List of year directory names (e.g., ['2021', '2022', ...])
+        
+    Returns:
+        dict: Dictionary mapping year (str) -> list of directory names (list of str)
+              Example: {'2021': ['Friedenslicht', 'Insektenhotel', ...], 
+                       '2022': ['07.04. Kerzen basteln', ...], ...}
+    """
+    directories_by_year = {}
+    
+    for year in year_directories:
+        year_path = f"{watch_directory}/{year}"
+        directories_by_year[year] = []
+        
+        try:
+            for node in nc.files.listdir(year_path):
+                if node.is_dir:
+                    directories_by_year[year].append(node.name)
+                    logging.debug(f"Found directory: {year}: {node.name}")
+            
+            logging.info(f"Found {len(directories_by_year[year])} directories for year {year}")
+        except Exception as e:
+            logging.error(f"Error getting directories for year {year}: {e}")
+    
+    return directories_by_year
+
+
+# Get year directories
+years_directories = getYearDirectories(WATCH_DIRECTORY)
+logging.info(f"Year directories: {years_directories}")
+
+# Get all subdirectories organized by year
+directories_by_year = getDirectoriesByYear(WATCH_DIRECTORY, years_directories)
+
+# Example: Loop through all directories of a given year
+example_year = "2024"
+if example_year in directories_by_year:
+    logging.info(f"Directories for year {example_year}:")
+    for dir_name in directories_by_year[example_year]:
+        logging.info(f"  - {dir_name}")
+
+# Example: Loop through all years and their directories
+logging.info("All directories by year:")
+for year, dirs in directories_by_year.items():
+    logging.info(f"Year {year}: {len(dirs)} directories")
+    for dir_name in dirs:
+        logging.debug(f"  - {dir_name}")
 
 sys.exit(0)
