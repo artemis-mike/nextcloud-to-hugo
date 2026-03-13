@@ -3,6 +3,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Temporary git directory
+tmp_workspace/
+
 # C extensions
 *.so
 
