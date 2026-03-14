@@ -50,8 +50,8 @@ class HugoGenerator:
             
             # Disable hooks to prevent UnicodeDecodeError on Windows from WSL/bash hooks
             try:
-                # Set hooks path to devnull to avoid default hook execution
-                self.repo.git.config('core.hooksPath', os.devnull)
+                # We do not set hooks path to os.devnull anymore, because `git lfs install`
+                # tries to create a directory or file there and fails if it is /dev/null
                 
                 # And aggressively delete the hooks directory just to be absolutely sure
                 hooks_dir = os.path.join(self.repo_dir, '.git', 'hooks')
@@ -62,8 +62,9 @@ class HugoGenerator:
 
             # Setup Git LFS
             try:
-                self.repo.git.lfs('install')
-                logging.info("Git LFS initialized locally.")
+                # Use --skip-repo to avoid creating hooks, or --force if needed
+                self.repo.git.lfs('install', '--skip-repo')
+                logging.info("Git LFS initialized locally without hooks.")
             except Exception as lfs_e:
                 logging.warning(f"Git LFS install failed (might not be installed on system): {lfs_e}")
 
@@ -77,7 +78,10 @@ class HugoGenerator:
         if not os.path.exists(post_dir):
             return False
         
-        return any(dir_name.lower() in d.lower() for d in os.listdir(post_dir))
+        # Normalize both strings by replacing hyphens with underscores to handle variations 
+        # like stand-up-paddling vs stand_up_paddling
+        normalized_dir_name = dir_name.lower().replace('-', '_')
+        return any(normalized_dir_name in d.lower().replace('-', '_') for d in os.listdir(post_dir))
 
     def create_branch(self, branch_name):
         try:
@@ -99,8 +103,23 @@ class HugoGenerator:
                 return False
                 
             self.repo.index.commit(message)
+            
+            # Explicitly push LFS objects first, since we disabled the pre-push hook during install
+            try:
+                logging.info("Pushing Git LFS objects...")
+                self.repo.git.lfs('push', 'origin', branch_name)
+            except Exception as lfs_push_e:
+                logging.warning(f"Git LFS push encountered an issue (can usually be ignored if no LFS files): {lfs_push_e}")
+
             origin = self.repo.remote(name='origin')
-            origin.push(branch_name)
+            push_info = origin.push(branch_name)
+            
+            # Check for push errors
+            for info in push_info:
+                if info.flags & info.ERROR:
+                    logging.error(f"Push failed for {branch_name}: {info.summary}")
+                    return False
+                    
             logging.info(f"Pushed branch {branch_name} to origin.")
             return True
         except Exception as e:

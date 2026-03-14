@@ -44,3 +44,27 @@ class GithubClient:
         except Exception as e:
             logging.error(f"Failed to create Pull Request: {e}")
             return None
+
+    def get_open_bot_prs(self):
+        """Retrieves all open PRs created by this script."""
+        try:
+            bot_prs = []
+            pulls = self.repo.get_pulls(state='open', sort='created', direction='desc')
+            for pr in pulls:
+                if pr.title.startswith("(nextcloud-to-hugo) Add post:"):
+                    bot_prs.append(pr)
+            return bot_prs
+        except Exception as e:
+            logging.error(f"Error retrieving open bot PRs: {e}")
+            return []
+
+    def close_pull_request(self, pr_number):
+        """Closes a specific Pull Request."""
+        try:
+            pr = self.repo.get_pull(pr_number)
+            pr.edit(state='closed')
+            logging.info(f"Closed obsolete Pull Request #{pr_number}: {pr.title}")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to close Pull Request #{pr_number}: {e}")
+            return False
