@@ -70,10 +70,18 @@ def main():
     articles_by_year = nc_client.get_articles_by_year(WATCH_DIRECTORY, year_dirs)
 
     valid_branch_names = []
+    
+    # Sort years in reverse order (youngest first)
+    sorted_years = sorted(articles_by_year.keys(), reverse=True)
 
-    for year, articles in articles_by_year.items():
+    for year in sorted_years:
+        articles = articles_by_year[year]
         logging.info(f"Working on year directory {year}")
-        for article in articles:
+        
+        # Sort articles by date in reverse (youngest first)
+        sorted_articles = sorted(articles, key=lambda x: x['date'] if x['date'] else "", reverse=True)
+        
+        for article in sorted_articles:
             if not article['date']:
                 logging.warning(f"Skipping {article['name']} because no date was parsed.")
                 continue
@@ -130,6 +138,9 @@ def main():
             for m in media_files:
                 shutil.copy(m, os.path.join(hugo_post_dir, os.path.basename(m)))
                 
+            # Resize images before creating index.md
+            hugo_gen.resize_images(hugo_post_dir)
+                
             # Create index.md
             index_path = os.path.join(hugo_post_dir, "index.md")
             
@@ -141,10 +152,21 @@ def main():
             categories = "[]"
             desc = ""
             
-            frontmatter = f"---\ntitle: '{title}'\ndate: {date}T00:00:00+02:00\ndraft: false\n"
+            frontmatter = (
+                "---\n"
+                f"title: '{title}'\n"
+                f"date: {date}T00:00:00+02:00\n"
+                "draft: false\n"
+            )
             if image:
                 frontmatter += f"image: {image}\n"
-            frontmatter += f"tags: {tags}\ndescription: {desc}\ncategories: {categories}\n---\n\n"
+            
+            frontmatter += (
+                f"tags: {tags}\n"
+                f"description: {desc}\n"
+                f"categories: {categories}\n"
+                "---\n\n"
+            )
             
             with open(index_path, "w", encoding='utf-8') as f:
                 f.write(frontmatter + markdown_content)

@@ -1,6 +1,7 @@
 import os
 import shutil
 import logging
+import subprocess
 from git import Repo
 from datetime import datetime
 
@@ -112,7 +113,7 @@ class HugoGenerator:
                 logging.warning(f"Git LFS push encountered an issue (can usually be ignored if no LFS files): {lfs_push_e}")
 
             origin = self.repo.remote(name='origin')
-            push_info = origin.push(branch_name)
+            push_info = origin.push(branch_name, force=True)
             
             # Check for push errors
             for info in push_info:
@@ -124,6 +125,32 @@ class HugoGenerator:
             return True
         except Exception as e:
             logging.error(f"Failed to commit and push: {e}")
+            return False
+
+    def resize_images(self, target_dir):
+        """Executes the image resizing script on the target directory."""
+        script_path = os.path.join(self.repo_dir, "tools", "resize_images.sh")
+        if not os.path.exists(script_path):
+            logging.error(f"Image resize script not found at {script_path}")
+            return False
+        
+        try:
+            # Ensure the script is executable
+            os.chmod(script_path, 0o755)
+            
+            logging.info(f"Running image resize script on {target_dir}")
+            result = subprocess.run([script_path, target_dir], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                logging.info("Image resizing completed successfully.")
+                logging.debug(f"Script output: {result.stdout}")
+                return True
+            else:
+                logging.error(f"Image resizing failed with return code {result.returncode}")
+                logging.error(f"Script stderr: {result.stderr}")
+                return False
+        except Exception as e:
+            logging.error(f"Error executing resize script: {e}")
             return False
 
     def cleanup(self):
