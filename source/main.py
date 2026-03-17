@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 import time
+import datetime
 from config import (
     LOGLEVEL, NEXTCLOUD_URL, NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD, WATCH_DIRECTORY,
     GITHUB_TOKEN, GITHUB_REPO_NAME, GITHUB_BRANCH, HUGO_REPO_URL
