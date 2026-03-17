@@ -53,6 +53,10 @@ def main():
         if not all([NEXTCLOUD_URL, NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD, GITHUB_TOKEN, GITHUB_REPO_NAME, HUGO_REPO_URL]):
             logging.error("Missing required environment variables (Nextcloud, GitHub, or Hugo repo).")
             return
+        
+        f = open("./lastRun.epoch", "w")     # Relevant for health.sh / health-compose.sh
+        f.write(str(round(datetime.now().timestamp())))
+        f.close()
 
         nc_client = NextcloudClient(NEXTCLOUD_URL, NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD)
         if not nc_client.connect():
