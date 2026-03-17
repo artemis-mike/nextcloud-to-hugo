@@ -2,8 +2,9 @@ import os
 import shutil
 import logging
 import time
+from datetime import datetime
 from config import (
-    LOGLEVEL, NEXTCLOUD_URL, NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD, WATCH_DIRECTORY,
+    LOGLEVEL, INTERVAL, NEXTCLOUD_URL, NEXTCLOUD_USERNAME, NEXTCLOUD_PASSWORD, WATCH_DIRECTORY,
     GITHUB_TOKEN, GITHUB_REPO_NAME, GITHUB_BRANCH, HUGO_REPO_URL
 )
 from nextcloud_client import NextcloudClient
