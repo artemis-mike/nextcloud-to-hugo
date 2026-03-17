@@ -1,6 +1,6 @@
 FROM python:3.13-alpine
 
-RUN apk add pandoc git
+RUN apk add pandoc git git-lfs
 
 RUN ["mkdir", "/nextcloud-to-hugo"]
 WORKDIR /nextcloud-to-hugo
