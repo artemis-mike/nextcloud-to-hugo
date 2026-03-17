@@ -20,6 +20,7 @@
       "platformAutomerge": true,
       "matchUpdateTypes": ["minor", "patch"],
       "matchPackageNames": [
+        "python",
         "gitpython",
         "requests",
         "nc_py_api", 
