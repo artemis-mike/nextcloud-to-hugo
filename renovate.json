@@ -14,6 +14,20 @@
         "docker/login-action",
         "docker/build-push-action"
       ]
+    },
+    {
+      "automerge": true,
+      "platformAutomerge": true,
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": [
+        "gitpython",
+        "requests",
+        "nc_py_api", 
+        "python-dotenv",
+        "PyGithub",
+        "pypandoc",
+        "datetime"
+      ]
     }
   ]
 }
