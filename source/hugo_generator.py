@@ -82,7 +82,8 @@ class HugoGenerator:
                 self.repo.git.lfs('install', '--skip-repo')
                 logging.info("Git LFS initialized locally without hooks.")
             except Exception as lfs_e:
-                logging.warning(f"Git LFS install failed (might not be installed on system): {lfs_e}")
+                logging.error(f"Git LFS install failed (might not be installed on system): {lfs_e}")
+                return False
 
             return True
         except Exception as e:
