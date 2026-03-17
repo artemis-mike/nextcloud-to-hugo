@@ -63,7 +63,7 @@ def main():
             return
 
         tmp_workspace = os.path.join(os.getcwd(), "tmp_workspace")
-        hugo_gen = HugoGenerator(tmp_workspace, HUGO_REPO_URL)
+        hugo_gen = HugoGenerator(tmp_workspace, HUGO_REPO_URL, token=GITHUB_TOKEN)
         
         if not hugo_gen.clone_or_open_repo():
             return

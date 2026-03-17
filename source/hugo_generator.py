@@ -6,18 +6,28 @@ from git import Repo
 from datetime import datetime
 
 class HugoGenerator:
-    def __init__(self, workspace_dir, repo_url):
+    def __init__(self, workspace_dir, repo_url, token=None):
         self.workspace_dir = workspace_dir
         self.repo_url = repo_url
+        self.token = token
         self.repo_dir = os.path.join(workspace_dir, "hugo_blog")
         self.repo = None
+
+    def _get_authenticated_url(self):
+        """Injects the token into the repository URL if provided."""
+        if not self.token or not self.repo_url.startswith("https://"):
+            return self.repo_url
+        
+        # Format: https://<token>@github.com/owner/repo.git
+        return self.repo_url.replace("https://", f"https://{self.token}@")
 
     def clone_or_open_repo(self):
         """Clones the repository if it doesn't exist, otherwise opens it."""
         try:
             if not os.path.exists(self.repo_dir):
-                logging.info(f"Cloning repository {self.repo_url} into {self.repo_dir}")
-                self.repo = Repo.clone_from(self.repo_url, self.repo_dir)
+                auth_url = self._get_authenticated_url()
+                logging.info(f"Cloning repository into {self.repo_dir}")
+                self.repo = Repo.clone_from(auth_url, self.repo_dir)
             else:
                 logging.info(f"Opening existing repository at {self.repo_dir}")
                 self.repo = Repo(self.repo_dir)
@@ -25,6 +35,11 @@ class HugoGenerator:
                 try:
                     # Fetch first, then reset hard to avoid pull conflicts with dirty working tree
                     origin = self.repo.remotes.origin
+                    
+                    # Update remote URL to include token if it changed or wasn't there
+                    auth_url = self._get_authenticated_url()
+                    origin.set_url(auth_url)
+                    
                     origin.fetch()
                     
                     # If we were on a custom branch before, ensure we switch back to main/master tracking branch first
