@@ -1,5 +1,5 @@
 # nextcloud-to-hugo
-Creates MRs for hugo blogs if findings new files on a nextcloud directory
+Compares a Hugo-blog with a directory in a Nextcloud and creates PRs for the Hugo-blog, if it finds a missing blog post.
 
 
 # Usage
