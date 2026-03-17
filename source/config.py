@@ -19,3 +19,4 @@ HUGO_REPO_URL = os.getenv("HUGO_REPO_URL")
 
 # General Configuration
 LOGLEVEL = os.getenv("LOGLEVEL", "INFO")
+INTERVAL = os.getenv("INTERVAL", 3600)
