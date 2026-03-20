@@ -1,5 +1,7 @@
 import os
 import shutil
+import signal
+import sys
 import logging
 import time
 from datetime import datetime
@@ -15,6 +17,10 @@ import re
 
 logging.basicConfig(format='%(asctime)s %(levelname)s\t%(message)s', encoding='utf-8')
 logging.getLogger().setLevel(LOGLEVEL)
+
+def signal_handler(sig, frame):
+  logging.info("Recevied signal " + str((signal.Signals(sig).name)) + ". Shutting down.")
+  sys.exit(0)
 
 def replace_umlauts(text):
     text = text.replace('Ä', 'Ae').replace('Ö', 'Oe').replace('Ü', 'Ue')
@@ -217,4 +223,7 @@ def main():
         time.sleep(INTERVAL)
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGHUP, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     main()
