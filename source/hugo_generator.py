@@ -155,7 +155,7 @@ class HugoGenerator:
             os.chmod(script_path, 0o755)
             
             logging.info(f"Running image resize script on {target_dir}")
-            result = subprocess.run(['sh', script_path, target_dir], capture_output=True, text=True)
+            result = subprocess.run([script_path, target_dir], capture_output=True, text=True)
             
             if result.returncode == 0:
                 logging.info("Image resizing completed successfully.")
