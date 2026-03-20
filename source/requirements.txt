@@ -5,5 +5,3 @@ python-dotenv==1.2.2
 PyGithub==2.8.1
 pypandoc==1.17
 datetime==6.0
-signal
-sys
