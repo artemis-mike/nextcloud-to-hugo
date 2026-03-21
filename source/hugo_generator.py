@@ -27,7 +27,10 @@ class HugoGenerator:
             if not os.path.exists(self.repo_dir):
                 auth_url = self._get_authenticated_url()
                 logging.info(f"Cloning repository into {self.repo_dir}")
-                self.repo = Repo.clone_from(auth_url, self.repo_dir)
+                # Use env variable to skip LFS smudge during clone to save bandwidth
+                env = os.environ.copy()
+                env['GIT_LFS_SKIP_SMUDGE'] = '1'
+                self.repo = Repo.clone_from(auth_url, self.repo_dir, env=env)
             else:
                 logging.info(f"Opening existing repository at {self.repo_dir}")
                 self.repo = Repo(self.repo_dir)
@@ -57,7 +60,10 @@ class HugoGenerator:
                     self.repo.git.clean('-fd')
                     
                     # Now it should be completely clean, we can pull safely
-                    origin.pull()
+                    # Skip LFS smudge during pull as well
+                    env = os.environ.copy()
+                    env['GIT_LFS_SKIP_SMUDGE'] = '1'
+                    origin.pull(env=env)
                 except Exception as git_e:
                     from git.exc import GitCommandError
                     if isinstance(git_e, GitCommandError):
@@ -78,8 +84,9 @@ class HugoGenerator:
 
             # Setup Git LFS
             try:
-                # Use --skip-repo to avoid creating hooks, or --force if needed
-                self.repo.git.lfs('install', '--skip-repo')
+                # Use --skip-repo to avoid creating hooks, --skip-smudge to only pull lfs pointers instead of
+                # full files. Use --local to keep configuration limited to this repository.
+                self.repo.git.lfs('install', '--local', '--skip-repo', '--skip-smudge')
                 logging.info("Git LFS initialized locally without hooks.")
             except Exception as lfs_e:
                 logging.error(f"Git LFS install failed (might not be installed on system): {lfs_e}")
