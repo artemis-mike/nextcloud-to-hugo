@@ -2,6 +2,6 @@ gitpython==3.1.46
 requests==2.33.1
 nc_py_api==0.24.2
 python-dotenv==1.2.2
-PyGithub==2.9.0
+PyGithub==2.9.1
 pypandoc==1.17
 datetime==6.0
