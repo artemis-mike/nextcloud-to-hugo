@@ -1,4 +1,4 @@
-gitpython==3.1.48
+gitpython==3.1.49
 requests==2.33.1
 nc_py_api==0.24.2
 python-dotenv==1.2.2
